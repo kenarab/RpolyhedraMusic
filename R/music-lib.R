@@ -94,9 +94,9 @@ PolyhedronTimbre.class <-  R6::R6Class(
       for (harmonic in seq_len(length(faces.numbers))){
         face <- faces.numbers[[face.order]]
         #current.harmonic <- self$base.freq*
-          u <- (2^15-1)*sin(2*pi*440*self$t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
+        #  u <- (2^15-1)*sin(2*pi*440*self$t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
 
-        u <- (2^15-1)*sin(2*pi*self$440*t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
+        #u <- (2^15-1)*sin(2*pi*self$440*t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
 
         print(harmonic)
       }
@@ -105,4 +105,4 @@ PolyhedronTimbre.class <-  R6::R6Class(
 
       self$wave <- Wave(self$u, samp.rate = 8000, bit=16) #make the wave variable
 
-    })
+    }))

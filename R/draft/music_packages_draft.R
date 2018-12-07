@@ -160,3 +160,55 @@ polyhedron.interpreted
 timbre <- PolyhedronTimbre.class$new(tetrahedron.interpreted)
 self <- timbre
 timbre$generate()
+
+
+
+#select simple polyhedra
+
+all.polyhedra <- getAvailablePolyhedra()
+
+
+polyhedra.music <- all.polyhedra[all.polyhedra$faces<=8,]
+rownames(polyhedra.music) <- 1:nrow(polyhedra.music)
+polyhedra.music %>% filter(faces==6)
+
+polyhedra.music[grepl("prism",polyhedra.music$scraped.name),]
+
+set.seed(2)
+sampled <- sort(sample(1:nrow(polyhedra.music),size = 9,replace = FALSE))
+sampled <- sort(c(sampled, 58))
+polyhedra.music.sampled <- polyhedra.music[sampled,]
+n <- nrow(polyhedra.music.sampled)
+polyhedron.colors <- rainbow(n)
+polyhedron.scale <- 5
+
+
+
+open3d()
+par3d(FOV = 1)
+rgl.bg( sphere =FALSE, fogtype = "none", color=c("black"))
+rgl.viewpoint(theta = 0, phi=0, zoom=0.8, fov=1)
+
+# 4. for each polyhedron, setup rotation, position and render
+for (i in seq_len(n)) {
+  # Obtain polyhedron
+  polyhedron.row <- polyhedra.music.sampled[i,]
+  polyhedron.name <- polyhedron.row$scraped.name
+  polyhedron <- getPolyhedron(source = polyhedron.row$source, polyhedron.name)
+
+  # Setup angles, position into transformationMatrix
+  current.angle <- i/n * 2 * pi
+  tm <- rotationMatrix(current.angle, 1, 0, 0)
+  x.pos <- round(polyhedron.scale * sin(current.angle), 2)
+  y.pos <- round(polyhedron.scale * cos(current.angle), 2)
+  tm <- tm %*% translationMatrix(x.pos, y.pos, 0)
+
+  # Render
+  print(paste("Drawing ", polyhedron.name, " rotated ", round(current.angle, 2),
+              " in (1,0,0) axis. Translated to (", x.pos, ",", y.pos, ",0)",
+              " with color ", polyhedron.colors[i], sep = ""))
+  shape.rgl <- polyhedron$getRGLModel(transformation.matrix = tm)
+  shade3d(shape.rgl, color = polyhedron.colors[i])
+}
+print(sampled)
+
