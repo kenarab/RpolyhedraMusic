@@ -55,7 +55,7 @@ PolyhedronInterpreted.class <-  R6::R6Class(
 
       neighbours <- self$solid[neighbours.candidates]
       #debug
-      print(neighbours)
+      #print(neighbours)
       neighbours.degree <- lapply(neighbours, FUN = length)
       neighbours.df <- data.frame(face.id = names(neighbours.degree),
                                   degree = unlist(neighbours.degree),
@@ -80,9 +80,13 @@ PolyhedronTimbre.class <-  R6::R6Class(
   public = list(
     polyhedron.interpreted = NA,
     base.freq = NA,
+    t = NA,
     #state
+    harmonics.mapping = NA,
+    harmonics = NA,
+    timbre    = NA,
     initialize = function(polyhedron.interpreted, base.freq = 440,
-                          t = seq(0, 3, 1/8000) #times in seconds if sample for 3 seconds at 8000Hz
+                          t = seq(0, 3, 1/8000) #times in seconds if sample for 3 seconds at 8000Hz,
                           ){
       self$polyhedron.interpreted <- polyhedron.interpreted
       self$base.freq              <- base.freq
@@ -90,19 +94,31 @@ PolyhedronTimbre.class <-  R6::R6Class(
       self
     },
     generate = function(){
+      all.harmonics <- 2:30
+      poly <- self$polyhedron.interpreted$polyhedron
+      solid.faces <- poly$state$solid
+      solid.vertices <- poly$state$vertices
+      solid.vertices <- solid.vertices[rownames(solid.vertices) %in% unique(unlist(solid.faces)),]
+      seed <- length(solid.faces)*151+ nrow(solid.vertices)*137+ length(poly$state$edges)*173
+      set.seed(seed)
       faces.numbers <- self$polyhedron.interpreted$faces.number
-      for (harmonic in seq_len(length(faces.numbers))){
+      harmonics.size <- length(faces.numbers)
+      self$harmonics.mapping <- c(1:sample(all.harmonics, size = harmonics.size,replace = FALSE))
+      self$harmonics <-  data.frame(t = self$t)
+      for (face.order in seq_len(harmonics.size)){
         face <- faces.numbers[[face.order]]
+        harmonic <- self$harmonics.mapping[face.order]
         #current.harmonic <- self$base.freq*
+        current.harmonic.wave <- (2^15-1)/harmonics.size*sin(2*pi*self$base.freq*harmonic*self$t)
+        self$harmonics[,paste("harmonic",harmonic,sep = "_")] <- current.harmonic.wave
         #  u <- (2^15-1)*sin(2*pi*440*self$t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
 
         #u <- (2^15-1)*sin(2*pi*self$440*t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
-
         print(harmonic)
       }
+      self$timbre <- apply(self$harmonics[,2:ncol(self$harmonics)],MARGIN = 1, FUN=sum)
+      self
     },
-    makeWave = function(){
-
-      self$wave <- Wave(self$u, samp.rate = 8000, bit=16) #make the wave variable
-
+    getWave = function(){
+      Wave(self$timbre, samp.rate = 8000, bit=16) #make the wave variable
     }))
