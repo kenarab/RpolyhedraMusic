@@ -235,6 +235,7 @@ play(timbre$getWave(), "afplay")
 
 # 4. for each polyhedron, setup rotation, position and render
 for (i in seq_len(n)) {
+#for (i in 1:2) {
   # Obtain polyhedron
   polyhedron.row <- polyhedra.music.sampled[i,]
   polyhedron.name <- polyhedron.row$scraped.name
@@ -244,6 +245,7 @@ for (i in seq_len(n)) {
 
   timbre <- PolyhedronTimbre.class$new(polyhedron.interpreted)
   timbre$generate()
+  self <- timbre
   print(paste("For polyhedron", polyhedron.row$scraped.name, "harmonic mapping is", paste(timbre$harmonics.mapping,collapse = ",")))
   print(paste("For polyhedron", polyhedron.row$scraped.name, "max.amp is", max(timbre$timbre)))
 
@@ -252,5 +254,6 @@ for (i in seq_len(n)) {
   #for 16-bit Wave files, data range is supposed to be in [-32768, 32767], see ?normalize
 
   play(timbre$getWave(), "afplay")
-
+  #debug
+#  stop("debug")
 }

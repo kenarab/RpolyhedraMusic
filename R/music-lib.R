@@ -84,7 +84,12 @@ PolyhedronTimbre.class <-  R6::R6Class(
     #state
     harmonics.mapping = NA,
     harmonics = NA,
+    harmonics.intensity = NA,
     timbre    = NA,
+    #Tristimulus timbre model
+    T1 = NA,
+    T2 = NA,
+    T3 = NA,
     initialize = function(polyhedron.interpreted, base.freq = 440,
                           t = seq(0, 3, 1/8000) #times in seconds if sample for 3 seconds at 8000Hz,
                           ){
@@ -94,7 +99,6 @@ PolyhedronTimbre.class <-  R6::R6Class(
       self
     },
     generate = function(){
-      all.harmonics <- 2:30
       poly <- self$polyhedron.interpreted$polyhedron
       solid.faces <- poly$state$solid
       solid.vertices <- poly$state$vertices
@@ -102,21 +106,56 @@ PolyhedronTimbre.class <-  R6::R6Class(
       seed <- length(solid.faces)*151+ nrow(solid.vertices)*137+ length(poly$state$edges)*173
       set.seed(seed)
       faces.numbers <- self$polyhedron.interpreted$faces.number
-      harmonics.size <- length(faces.numbers)
-      self$harmonics.mapping <- c(1:sample(all.harmonics, size = harmonics.size,replace = FALSE))
+      harmonics.size <- length(faces.numbers)-1
+      #T1 and T2
+      self$harmonics.mapping <- 1
+      #T2
+      t2.size <- min(harmonics.size-1,3)
+      t2.harmonics <- 2:4
+      self$harmonics.mapping <- c(self$harmonics.mapping,
+                                  sample(t2.harmonics, size = t2.size,replace = FALSE))
+      #T3
+      t3.size <- max(harmonics.size-1-3,0)
+      t3.harmonics <- 5:30
+      self$harmonics.mapping <- c(self$harmonics.mapping,
+                                  sample(t3.harmonics, size = t3.size, replace = FALSE))
+
+      #self$harmonics.intensity <- c(1,runif(0, 1, n = harmonics.size))
+      #harmonics intensity setting
+      self$harmonics.intensity <- c(1, rnorm(0.5, 0.3, n = harmonics.size))
+      self$harmonics.intensity
+      self$harmonics.intensity <- vapply(self$harmonics.intensity,
+                                         FUN= function(x){min(x,1)},
+                                         FUN.VALUE = numeric(1))
+      self$harmonics.intensity <- vapply(self$harmonics.intensity,
+                                         FUN= function(x){max(x,0)},
+                                         FUN.VALUE = numeric(1))
+
+      #min(max(
       self$harmonics <-  data.frame(t = self$t)
       for (face.order in seq_len(harmonics.size)){
         face <- faces.numbers[[face.order]]
         harmonic <- self$harmonics.mapping[face.order]
         #current.harmonic <- self$base.freq*
-        current.harmonic.wave <- (2^15-1)/harmonics.size*sin(2*pi*self$base.freq*harmonic*self$t)
+        current.harmonic.wave <- (2^15-1)/harmonics.size*
+                                  self$harmonics.intensity[face.order]*
+                                  sin(2*pi*self$base.freq*harmonic*self$t)
         self$harmonics[,paste("harmonic",harmonic,sep = "_")] <- current.harmonic.wave
         #  u <- (2^15-1)*sin(2*pi*440*self$t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
 
         #u <- (2^15-1)*sin(2*pi*self$440*t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
-        print(harmonic)
       }
-      self$timbre <- apply(self$harmonics[,2:ncol(self$harmonics)],MARGIN = 1, FUN=sum)
+      self$timbre <- round(apply(self$harmonics[,2:ncol(self$harmonics)],MARGIN = 1, FUN=sum))
+
+      # https://en.wikipedia.org/wiki/Timbre#Tristimulus_timbre_model
+      total.intensity <- sum(self$harmonics.intensity)
+      self$T1 <- 1/total.intensity
+      self$T2 <- sum(self$harmonics.intensity[which(self$harmonics.mapping%in% c(2:4))])/total.intensity
+      self$T3 <- sum(self$harmonics.intensity[which(!self$harmonics.mapping%in% c(1:4))])/total.intensity
+
+      print(paste("T1", round(self$T1,4),
+                  "T2", round(self$T2,4),
+                  "T3", round(self$T3,4)))
       self
     },
     getWave = function(){
