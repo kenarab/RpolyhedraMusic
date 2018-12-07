@@ -131,11 +131,32 @@ library("tuneR")
 
 soundgen::playme(sound = soundgen::beat())
 
-setWavPlayer("/Applications/'QuickTime Player.app'/Contents/MacOS/'QuickTime Player'")
 
 t <- seq(0, 3, 1/8000) #times in seconds if sample for 3 seconds at 8000Hz
 u <- (2^15-1)*sin(2*pi*440*t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
 w <- Wave(u, samp.rate = 8000, bit=16) #make the wave variable
 play(w, play="afplay")
 
+tetrahedron <- getPolyhedron(polyhedron.name = "tetrahedron")
 
+tetrahedron.interpreted <- PolyhedronInterpreted.class$new(polyhedron = tetrahedron)
+self <- tetrahedron.interpreted
+tetrahedron.interpreted$numerateFaces()
+tetrahedron.interpreted$faces.number
+
+
+all.polyhedra <- getAvailablePolyhedra()
+all.polyhedra %>% filter(grepl("truncated",scraped.name))
+
+truncated.octahedron <- getPolyhedron(source = "dmccooey", polyhedron.name = "truncated octahedron")
+
+truncated.octahedron.interpreted <- PolyhedronInterpreted.class$new(polyhedron = truncated.octahedron)
+self <- truncated.octahedron.interpreted
+truncated.octahedron.interpreted$numerateFaces()
+truncated.octahedron.interpreted$faces.number
+
+polyhedron.interpreted
+
+timbre <- PolyhedronTimbre.class$new(tetrahedron.interpreted)
+self <- timbre
+timbre$generate()

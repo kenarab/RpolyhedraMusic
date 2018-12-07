@@ -27,4 +27,5 @@ Imports: futile.logger,
          Rpolyhedra (>= 0.3.1),
          soundgen
 Collate:
+    'music-lib.R'
     'hello.R'
