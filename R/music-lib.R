@@ -161,3 +161,54 @@ PolyhedronTimbre.class <-  R6::R6Class(
     getWave = function(){
       Wave(self$timbre, samp.rate = 8000, bit=16) #make the wave variable
     }))
+
+
+PolyhedronChance.class <-  R6::R6Class(
+  "PolyhedronChance",
+  public = list(
+    polyhedron = NA,
+    faces.chance = NA,
+    faces.mapping = NA,
+    initialize = function(polyhedron,
+                          faces.mapping = NULL){
+      self$polyhedron <- polyhedron
+      self$initChances()
+      self$faces.chance <- names(polyhedron$state$solid)
+      self$faces.mapping <- faces.mapping
+      self
+    },
+    initChances = function(){
+      solid <- polyhedron$state$solid
+      f <- length(solid)
+      self$faces.chance <- rep(1/length(solid),f)
+      names(self$faces.chance) <- names(solid)
+      if (is.null(self$faces.mapping)){
+        #applied.scale <- c("C","D","E","F","G","A","B")
+        # pentatonic
+        applied.scale <- c("C","D","E","G","A")
+        n <- length(applied.scale)
+        periods <- floor(length(polyhedron$state$solid)/n)
+        module <- length(polyhedron$state$solid) %%n
+        self$faces.mapping <- rep(applied.scale, periods)
+        self$faces.mapping <- c(self$faces.mapping, applied.scale[seq_len(module)])
+      }
+      self$faces.chance
+    },
+    makeChance = function(){
+      floor(runif(1, min = 1, max=length(self$faces.chance)+0.9999))
+    },
+    takeChances = function(n, seed = 0){
+      set.seed(seed)
+      ret <-NULL
+      for (i in 1:n){
+        current.face <- self$makeChance()
+        #debug
+        print(current.face)
+
+        current.note <- self$faces.mapping[as.numeric(current.face)]
+        names(current.note) <- current.face
+        ret <- c(ret, current.note)
+      }
+      ret
+    }
+  ))

@@ -232,6 +232,10 @@ play(timbre$getWave(), "afplay")
 
 440*30
 
+poly.chance <- PolyhedronChance.class$new(polyhedron)
+self <- poly.chance
+poly.chance$initChances()
+poly.chance$takeChances(20,1212)
 
 # 4. for each polyhedron, setup rotation, position and render
 for (i in seq_len(n)) {
@@ -257,3 +261,4 @@ for (i in seq_len(n)) {
   #debug
 #  stop("debug")
 }
+
