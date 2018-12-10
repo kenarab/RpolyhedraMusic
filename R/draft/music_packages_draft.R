@@ -246,9 +246,8 @@ for (i in seq_len(n)) {
   timbre <- PolyhedronTimbre.class$new(polyhedron.interpreted)
   timbre$generate()
   self <- timbre
-  print(paste("For polyhedron", polyhedron.row$scraped.name, "harmonic mapping is", paste(timbre$harmonics.mapping,collapse = ",")))
-  print(paste("For polyhedron", polyhedron.row$scraped.name, "max.amp is", max(timbre$timbre)))
 
+  names(timbre$harmonics)
   timbre$getWave()
 
   #for 16-bit Wave files, data range is supposed to be in [-32768, 32767], see ?normalize
@@ -264,8 +263,8 @@ all.polyhedra <- getAvailablePolyhedra()
 
 
 polyhedra.music.high.faces <- all.polyhedra[all.polyhedra$faces==54,]
-rownames(polyhedra.music) <- 1:nrow(polyhedra.music)
-nrow(polyhedra.music)
+rownames(polyhedra.music.high.faces) <- 1:nrow(polyhedra.music.high.faces)
+n <- nrow(polyhedra.music.high.faces)
 
 
 for (i in seq_len(n)) {
@@ -278,8 +277,8 @@ for (i in seq_len(n)) {
   polyhedron.interpreted$numerateFaces()
 
   timbre <- PolyhedronTimbre.class$new(polyhedron.interpreted)
-  timbre$generate()
   self <- timbre
+  timbre$generate()
   print(paste("For polyhedron", polyhedron.row$scraped.name, "harmonic mapping is", paste(timbre$harmonics.mapping,collapse = ",")))
   print(paste("For polyhedron", polyhedron.row$scraped.name, "max.amp is", max(timbre$timbre)))
 

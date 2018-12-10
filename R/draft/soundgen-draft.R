@@ -39,6 +39,9 @@ for (i in 1:3) sound = soundgen(play = playback, temperature = .2)
 
 # Bouts versus syllables. Compare:
 sound = soundgen(formants = 'uai', repeatBout = 3, play = playback)
+
+sound = soundgen(formants = 'aeiou', repeatBout = 3, play = playback)
+
 sound = soundgen(formants = 'uai', nSyl = 3, play = playback)
 
 # Intonation contours per syllable and globally:
@@ -77,3 +80,4 @@ s = soundgen(sylLen = 800, pitch = 300, temperature = 0.001,
 # on project's homepage: http://cogsci.se/soundgen.html
 
 ## End(Not run)
+

@@ -107,7 +107,10 @@ PolyhedronTimbre.class <-  R6::R6Class(
       solid.faces <- poly$state$solid
       solid.vertices <- poly$state$vertices
       solid.vertices <- solid.vertices[rownames(solid.vertices) %in% unique(unlist(solid.faces)),]
-      seed <- length(solid.faces)*151+ nrow(solid.vertices)*137+ length(poly$state$edges)*173
+      seed <- length(solid.faces)*3163+ nrow(solid.vertices)*4021 + length(poly$state$edges)*5431
+      #debug
+      print(paste("seed",seed))
+
       set.seed(seed)
       faces.numbers <- self$polyhedron.interpreted$faces.number
       harmonics.size <- length(faces.numbers)-1
@@ -116,18 +119,42 @@ PolyhedronTimbre.class <-  R6::R6Class(
       #T2
       t2.size <- min(harmonics.size-1,3)
       t2.harmonics <- 2:4
+      t2.harmonics.sampled <- sample(t2.harmonics, size = t2.size,replace = FALSE)
       self$harmonics.mapping <- c(self$harmonics.mapping,
-                                  sample(t2.harmonics, size = t2.size,replace = FALSE))
+                                  t2.harmonics.sampled)
       #T3
-      t3.size <- max(harmonics.size-1-3,0)
       t3.harmonics <- 5:30
+      t3.size <- min(max(harmonics.size-1-3,0),length(t3.harmonics))
+      t3.harmonics.sampled <- sample(t3.harmonics, size = t3.size, replace = FALSE)
+      print(t3.harmonics.sampled)
       self$harmonics.mapping <- c(self$harmonics.mapping,
-                                  sample(t3.harmonics, size = t3.size, replace = FALSE))
-
+                                  t3.harmonics.sampled)
+      harmonics.size <- 1 +#t1.size
+                        t2.size+
+                        t3.size
       #self$harmonics.intensity <- c(1,runif(0, 1, n = harmonics.size))
       #harmonics intensity setting
-      self$harmonics.intensity <- c(1, rnorm(0.5, 0.3, n = harmonics.size))
-      self$harmonics.intensity
+
+      #self$harmonics.intensity <- c(1, rnorm(0.5, 0.3, n = harmonics.size-1))
+
+      self$harmonics.intensity <- rep(NA,harmonics.size-1)
+      mean <- 0.7
+      vc <- 0.3/0.7
+      decreasing.factor <- 0.92
+      for (cont in seq_len(harmonics.size)){
+        harmonic <- self$harmonics.mapping[cont]
+        self$harmonics.intensity[harmonic] <- rnorm(mean, sd = vc*mean, n = 1)
+        #debug
+        print(mean)
+        mean <- mean*decreasing.factor
+        vc <- vc*decreasing.factor
+      }
+
+
+
+      #TODO try with other distributions and kind of assignation
+      names(self$harmonics.intensity) <- self$harmonics.mapping
+
       self$harmonics.intensity <- vapply(self$harmonics.intensity,
                                          FUN= function(x){min(x,1)},
                                          FUN.VALUE = numeric(1))
@@ -144,7 +171,7 @@ PolyhedronTimbre.class <-  R6::R6Class(
         current.harmonic.wave <- (2^15-1)/harmonics.size*
                                   self$harmonics.intensity[face.order]*
                                   sin(2*pi*self$base.freq*harmonic*self$t)
-        self$harmonics[,paste("harmonic",harmonic,sep = "_")] <- current.harmonic.wave
+        self$harmonics[,paste("harmonic", harmonic, sep = "_")] <- current.harmonic.wave
         #  u <- (2^15-1)*sin(2*pi*440*self$t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
 
         #u <- (2^15-1)*sin(2*pi*self$440*t) #440 Hz sine wave that lasts t length seconds (here, 3 seconds)
@@ -155,7 +182,18 @@ PolyhedronTimbre.class <-  R6::R6Class(
       total.intensity <- sum(self$harmonics.intensity)
       self$T1 <- 1/total.intensity
       self$T2 <- sum(self$harmonics.intensity[which(self$harmonics.mapping%in% c(2:4))])/total.intensity
-      self$T3 <- sum(self$harmonics.intensity[which(!self$harmonics.mapping%in% c(1:4))])/total.intensity
+      self$T3 <- sum(self$harmonics.intensity[which(!self$harmonics.mapping %in% c(1:4))])/total.intensity
+
+
+      #debug
+      poly.name <- self$polyhedron.interpreted$polyhedron$getName()
+      print(paste("For polyhedron", poly.name, "harmonic mapping is",
+                  paste(self$harmonics.mapping,collapse = ",")))
+      harmonics.intensity <- self$harmonics.intensity
+      names(harmonics.intensity) <- self$harmonics.mapping
+      print(paste("For polyhedron", poly.name, "harmonic intensities are",
+                  paste(names(harmonics.intensity), round(harmonics.intensity, 3),collapse = ",", sep="=")))
+      print(paste("For polyhedron", poly.name, "max.amp is", max(self$timbre)))
 
       print(paste("T1", round(self$T1,4),
                   "T2", round(self$T2,4),
