@@ -140,10 +140,16 @@ PolyhedronTimbre.class <-  R6::R6Class(
       self$harmonics.intensity <- rep(NA,harmonics.size-1)
       mean <- 0.7
       vc <- 0.3/0.7
-      decreasing.factor <- 0.92
+      decreasing.factor <- 0.72
       for (cont in seq_len(harmonics.size)){
         harmonic <- self$harmonics.mapping[cont]
-        self$harmonics.intensity[harmonic] <- rnorm(mean, sd = vc*mean, n = 1)
+        if (cont >1 ){
+          int <- rnorm(mean, sd = vc*mean, n = 1)
+        }
+        else{
+          int <- 1
+        }
+        self$harmonics.intensity[cont] <- int
         #debug
         print(mean)
         mean <- mean*decreasing.factor
