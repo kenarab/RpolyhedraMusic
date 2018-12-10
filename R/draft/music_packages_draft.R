@@ -232,12 +232,8 @@ play(timbre$getWave(), "afplay")
 
 440*30
 
-poly.chance <- PolyhedronChance.class$new(polyhedron)
-self <- poly.chance
-poly.chance$initChances()
-poly.chance$takeChances(20,1212)
 
-# 4. for each polyhedron, setup rotation, position and render
+
 for (i in seq_len(n)) {
 #for (i in 1:2) {
   # Obtain polyhedron
@@ -261,4 +257,83 @@ for (i in seq_len(n)) {
   #debug
 #  stop("debug")
 }
+
+
+#Test with complex polyhedra
+all.polyhedra <- getAvailablePolyhedra()
+
+
+polyhedra.music.high.faces <- all.polyhedra[all.polyhedra$faces==54,]
+rownames(polyhedra.music) <- 1:nrow(polyhedra.music)
+nrow(polyhedra.music)
+
+
+for (i in seq_len(n)) {
+  #for (i in 1:2) {
+  # Obtain polyhedron
+  polyhedron.row <- polyhedra.music.high.faces[i,]
+  polyhedron.name <- polyhedron.row$scraped.name
+  polyhedron <- getPolyhedron(source = polyhedron.row$source, polyhedron.name)
+  polyhedron.interpreted <- PolyhedronInterpreted.class$new(polyhedron = polyhedron)
+  polyhedron.interpreted$numerateFaces()
+
+  timbre <- PolyhedronTimbre.class$new(polyhedron.interpreted)
+  timbre$generate()
+  self <- timbre
+  print(paste("For polyhedron", polyhedron.row$scraped.name, "harmonic mapping is", paste(timbre$harmonics.mapping,collapse = ",")))
+  print(paste("For polyhedron", polyhedron.row$scraped.name, "max.amp is", max(timbre$timbre)))
+
+  timbre$getWave()
+
+  #for 16-bit Wave files, data range is supposed to be in [-32768, 32767], see ?normalize
+
+  play(timbre$getWave(), "afplay")
+  #debug
+  #  stop("debug")
+}
+
+
+
+
+poly.chance <- PolyhedronChance.class$new(polyhedron)
+self <- poly.chance
+poly.chance$initChances()
+poly.chance$takeChances(20,1212)
+
+
+#Now plays timbre with chance sequence
+for (i in seq_len(n)) {
+  #for (i in 1:2) {
+  # Obtain polyhedron
+  polyhedron.row <- polyhedra.music.sampled[i,]
+  polyhedron.name <- polyhedron.row$scraped.name
+  polyhedron <- getPolyhedron(source = polyhedron.row$source, polyhedron.name)
+  polyhedron.interpreted <- PolyhedronInterpreted.class$new(polyhedron = polyhedron)
+  polyhedron.interpreted$numerateFaces()
+
+  timbre <- PolyhedronTimbre.class$new(polyhedron.interpreted)
+  timbre$generate()
+  self <- timbre
+  print(paste("For polyhedron", polyhedron.row$scraped.name, "harmonic mapping is", paste(timbre$harmonics.mapping,collapse = ",")))
+  print(paste("For polyhedron", polyhedron.row$scraped.name, "max.amp is", max(timbre$timbre)))
+
+  timbre$getWave()
+
+  #for 16-bit Wave files, data range is supposed to be in [-32768, 32767], see ?normalize
+
+  poly.chance <- PolyhedronChance.class$new(polyhedron)
+  self <- poly.chance
+  poly.chance$initChances()
+  notes.sequence <- poly.chance$takeChances(20,seed = 1212)
+
+  #debug
+  stop("debug")
+  self <- timbre
+  timbre$playSequence(notes.sequence = notes.sequence, duration =0.5)
+  #play(timbre$getWave(), "afplay")
+  #debug
+  #  stop("debug")
+}
+
+
 

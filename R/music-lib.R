@@ -80,7 +80,8 @@ PolyhedronTimbre.class <-  R6::R6Class(
   public = list(
     polyhedron.interpreted = NA,
     base.freq = NA,
-    t = NA,
+    secs = NA,
+    t    = NA,
     #state
     harmonics.mapping = NA,
     harmonics = NA,
@@ -90,12 +91,15 @@ PolyhedronTimbre.class <-  R6::R6Class(
     T1 = NA,
     T2 = NA,
     T3 = NA,
+    #notes
+    wave = NA,
+    notes = NA,
     initialize = function(polyhedron.interpreted, base.freq = 440,
-                          t = seq(0, 3, 1/8000) #times in seconds if sample for 3 seconds at 8000Hz,
-                          ){
+                          secs = 3){
       self$polyhedron.interpreted <- polyhedron.interpreted
       self$base.freq              <- base.freq
-      self$t                      <- t
+      self$secs                   <- secs
+      self$t                      <- seq(0, secs, 1/8000) #times in seconds if sample for 3 seconds at 8000Hz,
       self
     },
     generate = function(){
@@ -158,9 +162,27 @@ PolyhedronTimbre.class <-  R6::R6Class(
                   "T3", round(self$T3,4)))
       self
     },
-    getWave = function(){
-      Wave(self$timbre, samp.rate = 8000, bit=16) #make the wave variable
-    }))
+    getWave = function(note){
+      self$wave <- Wave(left = self$timbre,
+                        right = self$timbre,
+                        samp.rate = 8000, bit=16) #make the wave variable
+      self$wave
+    },
+    getNote = function(note){
+      str(self$wave)
+      if (is.null(self$notes[[note]])){
+
+      }
+      self$notes[[note]]
+    },
+    playSequence=function(notes.sequence, duration=0.5){
+      wave <- self$getWave()
+      for (note in notes.sequence){
+        note.wave <- self$getNote(note)
+        play(note.wave, player = "afplayer")
+      }
+    }
+    ))
 
 
 PolyhedronChance.class <-  R6::R6Class(
@@ -202,9 +224,6 @@ PolyhedronChance.class <-  R6::R6Class(
       ret <-NULL
       for (i in 1:n){
         current.face <- self$makeChance()
-        #debug
-        print(current.face)
-
         current.note <- self$faces.mapping[as.numeric(current.face)]
         names(current.note) <- current.face
         ret <- c(ret, current.note)
