@@ -118,12 +118,12 @@ PolyhedronTimbre.class <-  R6::R6Class(
       self$harmonics.mapping <- 1
       #T2
       t2.size <- min(harmonics.size-1,3)
-      t2.harmonics <- 2:4
+      t2.harmonics <- 2:9
       t2.harmonics.sampled <- sample(t2.harmonics, size = t2.size,replace = FALSE)
       self$harmonics.mapping <- c(self$harmonics.mapping,
                                   t2.harmonics.sampled)
       #T3
-      t3.harmonics <- 5:30
+      t3.harmonics <- 10:30
       t3.size <- min(max(harmonics.size-1-3,0),length(t3.harmonics))
       t3.harmonics.sampled <- sample(t3.harmonics, size = t3.size, replace = FALSE)
       print(t3.harmonics.sampled)
@@ -195,8 +195,13 @@ PolyhedronTimbre.class <-  R6::R6Class(
       poly.name <- self$polyhedron.interpreted$polyhedron$getName()
       print(paste("For polyhedron", poly.name, "harmonic mapping is",
                   paste(self$harmonics.mapping,collapse = ",")))
+
+      self$harmonics.intensity <- self$harmonics.intensity[order(as.numeric(names(self$harmonics.intensity)))]
+      self$harmonics.mapping <- self$harmonics.mapping[order(as.numeric(self$harmonics.mapping))]
+
       harmonics.intensity <- self$harmonics.intensity
       names(harmonics.intensity) <- self$harmonics.mapping
+
       print(paste("For polyhedron", poly.name, "harmonic intensities are",
                   paste(names(harmonics.intensity), round(harmonics.intensity, 3),collapse = ",", sep="=")))
       print(paste("For polyhedron", poly.name, "max.amp is", max(self$timbre)))
@@ -204,6 +209,7 @@ PolyhedronTimbre.class <-  R6::R6Class(
       print(paste("T1", round(self$T1,4),
                   "T2", round(self$T2,4),
                   "T3", round(self$T3,4)))
+
       self
     },
     getWave = function(note){

@@ -231,9 +231,7 @@ play(timbre$getWave(), "afplay")
 #harmonics test
 
 440*30
-
-
-
+n <- nrow(polyhedra.music.sampled)
 for (i in seq_len(n)) {
 #for (i in 1:2) {
   # Obtain polyhedron
@@ -262,10 +260,16 @@ for (i in seq_len(n)) {
 all.polyhedra <- getAvailablePolyhedra()
 
 
-polyhedra.music.high.faces <- all.polyhedra[all.polyhedra$faces==54,]
+polyhedra.music.high.faces <- all.polyhedra[all.polyhedra$faces %in% 54:60,]
 rownames(polyhedra.music.high.faces) <- 1:nrow(polyhedra.music.high.faces)
 n <- nrow(polyhedra.music.high.faces)
+n
 
+# Antonio
+
+# Curva ADSR para generar
+# trabajar en poner los armonicos superiores en el ataque
+#
 
 for (i in seq_len(n)) {
   #for (i in 1:2) {
@@ -279,7 +283,7 @@ for (i in seq_len(n)) {
   timbre <- PolyhedronTimbre.class$new(polyhedron.interpreted)
   self <- timbre
   timbre$generate()
-  print(paste("For polyhedron", polyhedron.row$scraped.name, "harmonic mapping is", paste(timbre$harmonics.mapping,collapse = ",")))
+  print(paste("For polyhedron", polyhedron.row$scraped.name, "harmonic mapping is", paste(timbre$harmonics.mapping, collapse = ",")))
   print(paste("For polyhedron", polyhedron.row$scraped.name, "max.amp is", max(timbre$timbre)))
 
   timbre$getWave()
